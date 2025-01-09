@@ -14,7 +14,8 @@ Actor p1 = {ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH, ACTOR_HEIGHT};
 Actor p2 = {WINDOW_WIDTH - ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH,
             ACTOR_HEIGHT};
 
-Ball b = {BALL_START_X, BALL_START_Y, BALL_WIDTH, BALL_HEIGHT};
+Ball b = {BALL_START_X, BALL_START_Y,    BALL_WIDTH, BALL_HEIGHT, 1,
+          0.2,          BALL_START_SPEED};
 
 int initialise_window(void) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -41,31 +42,33 @@ int initialise_window(void) {
 
 void process_input() {
     SDL_Event event;
-    SDL_PollEvent(&event);
-
-    switch (event.type) {
-    case SDL_QUIT:
-        game_is_running = FALSE;
-        break;
-    case SDL_KEYDOWN:
-        if (event.key.keysym.sym == SDLK_ESCAPE)
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
             game_is_running = FALSE;
-        break;
+        }
+        if (event.type == SDL_KEYDOWN) {
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                game_is_running = FALSE;
+            }
+        }
+    }
+    // Get current keyboard state
+    const Uint8 *key_state = SDL_GetKeyboardState(NULL);
+
+    // Player 1 controls
+    if (key_state[SDL_SCANCODE_W]) {
+        p1.y -= ACTOR_MOVE_SPEED;
+    }
+    if (key_state[SDL_SCANCODE_S]) {
+        p1.y += ACTOR_MOVE_SPEED;
     }
 
-    // Player input
-    switch (event.key.keysym.sym) {
-    case SDLK_w:
-        p1.y -= 10;
-        break;
-    case SDLK_s:
-        p1.y += 10;
-        break;
-    case SDLK_UP:
-        p2.y -= 10;
-        break;
-    case SDLK_DOWN:
-        p2.y += 10;
+    // Player 2 controls
+    if (key_state[SDL_SCANCODE_UP]) {
+        p2.y -= ACTOR_MOVE_SPEED;
+    }
+    if (key_state[SDL_SCANCODE_DOWN]) {
+        p2.y += ACTOR_MOVE_SPEED;
     }
 }
 
@@ -81,6 +84,54 @@ void update() {
     /* float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0; */
 
     last_frame_time = SDL_GetTicks();
+
+    // Handle paddle constraints
+    if (p1.y < 0) {
+        p1.y = 0;
+    }
+    if (p1.y + p1.height > WINDOW_HEIGHT) {
+        p1.y = WINDOW_HEIGHT - p1.height;
+    }
+
+    if (p2.y < 0) {
+        p2.y = 0;
+    }
+    if (p2.y + p2.height > WINDOW_HEIGHT) {
+        p2.y = WINDOW_HEIGHT - p2.height;
+    }
+
+    // Begin moving towards player 1
+    b.x += b.dx * b.speed;
+    b.y += b.dy * b.speed;
+
+    // Ball bounces off the top and bottom walls
+    if (b.y <= 0 || b.y + b.height >= WINDOW_HEIGHT) {
+        b.dy *= -1;
+    }
+
+    // Ball collides with player 1
+    if (b.x <= p1.x + p1.width && b.y + b.height >= p1.y &&
+        b.y <= p1.y + p1.height) {
+        b.dx *= -1;
+        b.speed += BALL_DELTA_SPEED;
+    }
+
+    // Ball collides with player 2
+    if (b.x + b.width >= p2.x && b.y + b.height >= p2.y &&
+        b.y <= p2.y + p2.height) {
+        b.dx *= -1;
+        b.speed += BALL_DELTA_SPEED;
+    }
+
+    // Handle out of bounds
+    if (b.x < 0 || b.x > WINDOW_WIDTH) {
+        srand(time(NULL));
+
+        b.x = BALL_START_X;
+        b.y = BALL_START_Y;
+        b.dx = (b.x < 0) ? 1 : -1;
+        b.dy = ((float)rand() / RAND_MAX) * 0.5;
+    }
 }
 
 void render() {
