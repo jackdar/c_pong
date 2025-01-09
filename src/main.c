@@ -47,22 +47,8 @@ void process_input() {
     case SDL_KEYDOWN:
         if (event.key.keysym.sym == SDLK_ESCAPE)
             game_is_running = FALSE;
-        break;
-    }
 
-    // Player input
-    switch (event.key.keysym.sym) {
-    case SDLK_w:
-        a1.x -= 10;
         break;
-    case SDLK_s:
-        a1.x += 10;
-        break;
-    case SDLK_UP:
-        a2.x -= 10;
-        break;
-    case SDLK_DOWN:
-        a2.x += 10;
     }
 }
 
