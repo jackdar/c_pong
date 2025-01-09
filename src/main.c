@@ -1,4 +1,5 @@
 #include "actor.h"
+#include "ball.h"
 #include "defs.h"
 #include "structs.h"
 #include <SDL2/SDL.h>
@@ -9,9 +10,11 @@ int last_frame_time = 0;
 
 App app;
 
-Actor a1 = {ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH, ACTOR_HEIGHT};
-Actor a2 = {WINDOW_WIDTH - ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH,
+Actor p1 = {ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH, ACTOR_HEIGHT};
+Actor p2 = {WINDOW_WIDTH - ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH,
             ACTOR_HEIGHT};
+
+Ball b = {BALL_START_X, BALL_START_Y, BALL_WIDTH, BALL_HEIGHT};
 
 int initialise_window(void) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -47,8 +50,22 @@ void process_input() {
     case SDL_KEYDOWN:
         if (event.key.keysym.sym == SDLK_ESCAPE)
             game_is_running = FALSE;
-
         break;
+    }
+
+    // Player input
+    switch (event.key.keysym.sym) {
+    case SDLK_w:
+        p1.y -= 10;
+        break;
+    case SDLK_s:
+        p1.y += 10;
+        break;
+    case SDLK_UP:
+        p2.y -= 10;
+        break;
+    case SDLK_DOWN:
+        p2.y += 10;
     }
 }
 
@@ -70,13 +87,17 @@ void render() {
     SDL_SetRenderDrawColor(app.renderer, 0, 0, 0, 255);
     SDL_RenderClear(app.renderer);
 
-    // TODO: Render the actors
-    SDL_Rect a1_rect = {a1.x, a1.y, a1.width, a1.height};
-    SDL_Rect a2_rect = {a2.x, a2.y, a2.width, a2.height};
+    // Render the actors
+    SDL_Rect p1_rect = {p1.x, p1.y, p1.width, p1.height};
+    SDL_Rect p2_rect = {p2.x, p2.y, p2.width, p2.height};
+
+    // Render the ball
+    SDL_Rect b_rect = {b.x, b.y, b.width, b.height};
 
     SDL_SetRenderDrawColor(app.renderer, 255, 255, 255, 255);
-    SDL_RenderFillRect(app.renderer, &a1_rect);
-    SDL_RenderFillRect(app.renderer, &a2_rect);
+    SDL_RenderFillRect(app.renderer, &p1_rect);
+    SDL_RenderFillRect(app.renderer, &p2_rect);
+    SDL_RenderFillRect(app.renderer, &b_rect);
 
     SDL_RenderPresent(app.renderer);
 }
