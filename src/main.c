@@ -4,6 +4,7 @@
 #include "player.h"
 #include "structs.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 #include <stdio.h>
 
 int game_is_running = FALSE;
@@ -199,6 +200,32 @@ void render() {
 
     // Render the ball
     SDL_Rect b_rect = {b.x, b.y, b.width, b.height};
+
+    // Render the scoreboard
+    TTF_Init();
+
+    TTF_Font *font = TTF_OpenFont("OpenSans-Regular.ttf", 40);
+    if (font == NULL) {
+        printf("Font loading failed: %s\n", TTF_GetError());
+    }
+
+    char score[10];
+    sprintf(score, "%d - %d", pl1.score, pl2.score);
+
+    SDL_Surface *text_surface =
+        TTF_RenderText_Solid(font, score, (SDL_Color){255, 255, 255, 255});
+    if (text_surface == NULL) {
+        printf("Text surface creation failed: %s\n", TTF_GetError());
+    }
+
+    SDL_Texture *text_texture =
+        SDL_CreateTextureFromSurface(app.renderer, text_surface);
+    if (text_texture == NULL) {
+        printf("Text texture creation failed: %s\n", TTF_GetError());
+    }
+
+    SDL_Rect text_rect = {WINDOW_WIDTH / 2 - 35, 10, 70, 45};
+    SDL_RenderCopy(app.renderer, text_texture, NULL, &text_rect);
 
     SDL_SetRenderDrawColor(app.renderer, 255, 255, 255, 255);
     SDL_RenderFillRect(app.renderer, &p1_rect);
