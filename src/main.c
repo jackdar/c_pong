@@ -59,37 +59,32 @@ void process_input() {
     // Get current keyboard state
     const Uint8 *key_state = SDL_GetKeyboardState(NULL);
 
+    // Reset paddle velocities
+    p1.delta = 0;
+    p2.delta = 0;
+
     // Player 1 controls
     if (key_state[SDL_SCANCODE_W]) {
         p1.y -= ACTOR_MOVE_SPEED;
+        p1.delta = -1;
     }
     if (key_state[SDL_SCANCODE_S]) {
         p1.y += ACTOR_MOVE_SPEED;
+        p1.delta = 1;
     }
 
     // Player 2 controls
     if (key_state[SDL_SCANCODE_UP]) {
         p2.y -= ACTOR_MOVE_SPEED;
+        p2.delta = -1;
     }
     if (key_state[SDL_SCANCODE_DOWN]) {
         p2.y += ACTOR_MOVE_SPEED;
+        p2.delta = 1;
     }
 }
 
-void setup() {}
-
-void update() {
-    int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - last_frame_time);
-
-    if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
-        SDL_Delay(time_to_wait);
-    }
-
-    /* float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0; */
-
-    last_frame_time = SDL_GetTicks();
-
-    // Handle paddle constraints
+void handle_paddle_constraints() {
     if (p1.y < 0) {
         p1.y = 0;
     }
@@ -103,39 +98,95 @@ void update() {
     if (p2.y + p2.height > WINDOW_HEIGHT) {
         p2.y = WINDOW_HEIGHT - p2.height;
     }
+}
 
-    // Begin moving towards player 1
-    b.x += b.dx * b.speed;
-    b.y += b.dy * b.speed;
-
-    // Ball bounces off the top and bottom walls
-    if (b.y <= 0 || b.y + b.height >= WINDOW_HEIGHT) {
-        b.dy *= -1;
+void normalise_ball_speed() {
+    float speed = sqrt(b.dx * b.dx + b.dy * b.dy);
+    if (speed > MAX_BALL_SPEED) {
+        b.dx = b.dx / speed * MAX_BALL_SPEED;
+        b.dy = b.dy / speed * MAX_BALL_SPEED;
     }
+}
 
+void handle_collision() {
     // Ball collides with player 1
     if (b.x <= p1.x + p1.width && b.y + b.height >= p1.y &&
         b.y <= p1.y + p1.height) {
+        b.x = p1.x + p1.width;
+
         b.dx *= -1;
-        b.speed += BALL_DELTA_SPEED;
+        b.dy += p1.delta * PADDLE_EFFECT_MULTIPLIER;
+
+        normalise_ball_speed();
+
+        b.speed += BALL_SPEED_INCREASE;
     }
 
     // Ball collides with player 2
     if (b.x + b.width >= p2.x && b.y + b.height >= p2.y &&
         b.y <= p2.y + p2.height) {
+        b.x = p2.x - b.width;
+
         b.dx *= -1;
-        b.speed += BALL_DELTA_SPEED;
-    }
+        b.dy += p2.delta * PADDLE_EFFECT_MULTIPLIER;
 
-    // Handle out of bounds
+        normalise_ball_speed();
+
+        b.speed += BALL_SPEED_INCREASE;
+    }
+}
+
+void handle_scoreboard() {
+    if (b.x < 0) {
+        pl2.score++;
+    }
+    if (b.x > WINDOW_WIDTH) {
+        pl1.score++;
+    }
+}
+
+void reset_ball() {
+    srand(time(NULL));
+
+    b.dx = (b.x < 0) ? 1 : -1;
+    b.dy = ((float)rand() / RAND_MAX) * 2 - 1;
+
+    b.x = BALL_START_X;
+    b.y = BALL_START_Y;
+}
+
+void check_ball_out_of_bounds() {
     if (b.x < 0 || b.x > WINDOW_WIDTH) {
-        srand(time(NULL));
-
-        b.x = BALL_START_X;
-        b.y = BALL_START_Y;
-        b.dx = (b.x < 0) ? 1 : -1;
-        b.dy = ((float)rand() / RAND_MAX) * 0.5;
+        handle_scoreboard();
+        reset_ball();
     }
+}
+
+void check_ball_bounce() {
+    if (b.y <= 0 || b.y + b.height >= WINDOW_HEIGHT) {
+        b.dy *= -1;
+    }
+}
+
+void update() {
+    int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - last_frame_time);
+
+    if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
+        SDL_Delay(time_to_wait);
+    }
+
+    /* float delta_time = (SDL_GetTicks() - last_frame_time) / 1000.0; */
+
+    last_frame_time = SDL_GetTicks();
+
+    // Move the ball
+    b.x += b.dx * b.speed;
+    b.y += b.dy * b.speed;
+
+    handle_paddle_constraints();
+    check_ball_bounce();
+    check_ball_out_of_bounds();
+    handle_collision();
 }
 
 void render() {
@@ -165,8 +216,6 @@ void destroy_window() {
 
 int main() {
     game_is_running = initialise_window();
-
-    setup();
 
     while (game_is_running) {
         process_input();

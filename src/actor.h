@@ -9,6 +9,7 @@ typedef struct {
     float y;
     float width;
     float height;
+    float delta;
 } Actor;
 
 #endif
