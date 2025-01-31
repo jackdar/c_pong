@@ -1,6 +1,7 @@
 #include "actor.h"
 #include "ball.h"
 #include "defs.h"
+#include "player.h"
 #include "structs.h"
 #include <SDL2/SDL.h>
 #include <stdio.h>
@@ -10,12 +11,15 @@ int last_frame_time = 0;
 
 App app;
 
-Actor p1 = {ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH, ACTOR_HEIGHT};
+Actor p1 = {ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH, ACTOR_HEIGHT, 0};
 Actor p2 = {WINDOW_WIDTH - ACTOR_START_X, ACTOR_START_Y, ACTOR_WIDTH,
-            ACTOR_HEIGHT};
+            ACTOR_HEIGHT, 0};
 
 Ball b = {BALL_START_X, BALL_START_Y,    BALL_WIDTH, BALL_HEIGHT, 1,
           0.2,          BALL_START_SPEED};
+
+Player pl1 = {0};
+Player pl2 = {0};
 
 int initialise_window(void) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
