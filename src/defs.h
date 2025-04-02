@@ -23,5 +23,5 @@
 
 #define PADDLE_EFFECT_MULTIPLIER 0.5
 
-#define FONT_FILE "OpenSans-Regular.ttf"
+#define FONT_FILE "assets/fonts/OpenSans-Regular.ttf"
 #define FONT_SIZE 24
