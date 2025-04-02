@@ -42,6 +42,14 @@ int initialise_window(void) {
         return FALSE;
     }
 
+    TTF_Init();
+
+    app.font = TTF_OpenFont(FONT_FILE, FONT_SIZE);
+    if (!app.font) {
+        fprintf(stderr, "Font loading failed: %s\n", TTF_GetError());
+        return FALSE;
+    }
+
     return TRUE;
 }
 
@@ -201,19 +209,12 @@ void render() {
     // Render the ball
     SDL_Rect b_rect = {b.x, b.y, b.width, b.height};
 
-    // Render the scoreboard
-    TTF_Init();
-
-    TTF_Font *font = TTF_OpenFont("OpenSans-Regular.ttf", 40);
-    if (font == NULL) {
-        printf("Font loading failed: %s\n", TTF_GetError());
-    }
-
     char score[10];
     sprintf(score, "%d - %d", pl1.score, pl2.score);
 
+    // Render the scoreboard
     SDL_Surface *text_surface =
-        TTF_RenderText_Solid(font, score, (SDL_Color){255, 255, 255, 255});
+        TTF_RenderText_Solid(app.font, score, (SDL_Color){255, 255, 255, 255});
     if (text_surface == NULL) {
         printf("Text surface creation failed: %s\n", TTF_GetError());
     }

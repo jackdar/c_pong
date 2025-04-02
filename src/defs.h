@@ -22,3 +22,6 @@
 #define MAX_BALL_SPEED 10
 
 #define PADDLE_EFFECT_MULTIPLIER 0.5
+
+#define FONT_FILE "OpenSans-Regular.ttf"
+#define FONT_SIZE 24
