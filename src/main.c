@@ -3,8 +3,8 @@
 #include "defs.h"
 #include "player.h"
 #include "structs.h"
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <SDL.h>
+#include <SDL_ttf.h>
 #include <stdio.h>
 
 int game_is_running = FALSE;

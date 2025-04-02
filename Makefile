@@ -1,8 +1,17 @@
+CFLAGS = -g -std=c99 -Wall $(shell sdl2-config --cflags)
+LDFLAGS = $(shell sdl2-config --libs) -lSDL2_ttf
+SRC_DIR = ./src
+BUILD_DIR = ./build
+SOURCES= $(wildcard $(SRC_DIR)/*.c)
+OUTPUT = $(BUILD_DIR)/game
+
 build:
-	gcc -Wall -I/opt/homebrew/include -std=c99 ./src/*.c -o game -L/opt/homebrew/lib -lSDL2 -lSDL2_ttf
+	mkdir -p $(BUILD_DIR)
+	gcc $(CFLAGS) $(SOURCES) -o $(OUTPUT) $(LDFLAGS)
 
 run:
-	make && ./game
+	make build
+	$(OUTPUT)
 
 clean:
-	rm game
+	rm -rf $(BUILD_DIR)
